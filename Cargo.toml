@@ -1,0 +1,25 @@
+[package]
+name = "os"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+license = "GPL-3.0"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[workspace]
+members = ["kernel"]
+
+[build-dependencies]
+bootloader = "0.11.6"
+kernel = { path = "kernel", artifact = "bin", target = "x86_64-unknown-none" }
+
+[dependencies]
+ovmf-prebuilt = "0.1.0-alpha.1"

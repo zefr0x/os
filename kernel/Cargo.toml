@@ -1,0 +1,14 @@
+[package]
+name = "kernel"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootloader_api = "0.11.6"
+embedded-graphics = "0.8.1"
+generic_once_cell = "0.1.1"
+spin = "0.9.8"
+uart_16550 = "0.3.0"
+
+[target.'cfg(target_arch="x86_64")'.dependencies]
+x86_64 = "0.14.11"
