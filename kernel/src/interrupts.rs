@@ -2,13 +2,14 @@ use generic_once_cell::Lazy;
 use spin::Mutex;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
+use crate::dbg_println;
 use crate::gdt;
-use crate::serial_println;
 
 static IDT: Lazy<Mutex<()>, InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
 
     idt.breakpoint.set_handler_fn(breakpoint_handler);
+    #[allow(unsafe_code)]
     unsafe {
         idt.double_fault
             .set_handler_fn(double_fault_handler)
@@ -30,5 +31,5 @@ extern "x86-interrupt" fn double_fault_handler(
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    serial_println!("CPU EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+    dbg_println!("CPU EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }

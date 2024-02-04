@@ -2,7 +2,9 @@ use generic_once_cell::Lazy;
 use spin::Mutex;
 use uart_16550::SerialPort;
 
+// Used to print debug info.
 pub static SERIAL0: Lazy<Mutex<()>, Mutex<SerialPort>> = Lazy::new(|| {
+    #[allow(unsafe_code)]
     let mut serial_port = unsafe { SerialPort::new(0x3F8) };
     serial_port.init();
 
@@ -21,7 +23,7 @@ pub fn _print(args: ::core::fmt::Arguments) {
 
 /// Prints to the host through the serial interface.
 #[macro_export]
-macro_rules! serial_print {
+macro_rules! dbg_print {
     ($($arg:tt)*) => {
         $crate::drivers::serial::_print(format_args!($($arg)*));
     };
@@ -29,9 +31,9 @@ macro_rules! serial_print {
 
 /// Prints to the host through the serial interface, appending a newline.
 #[macro_export]
-macro_rules! serial_println {
+macro_rules! dbg_println {
     () => ($crate::serial_print!("\n"));
-    ($fmt:expr) => ($crate::serial_print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => ($crate::serial_print!(
+    ($fmt:expr) => ($crate::dbg_print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => ($crate::dbg_print!(
         concat!($fmt, "\n"), $($arg)*));
 }

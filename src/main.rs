@@ -3,7 +3,7 @@ fn main() {
     let uefi_path = env!("UEFI_PATH");
     let bios_path = env!("BIOS_PATH");
 
-    println!("Running: {}", uefi_path);
+    println!("Running: {uefi_path}");
 
     // choose wheter to use kvm or not for the VM
     let kvm = true;
@@ -29,7 +29,7 @@ fn main() {
     // redirect serial output to stdio
     cmd.arg("-serial").arg("stdio");
 
-    let mut child = cmd.spawn().unwrap();
+    let mut child = cmd.spawn().expect("Failed to execute qemu");
 
-    child.wait().unwrap();
+    child.wait().expect("qemu failed to run");
 }

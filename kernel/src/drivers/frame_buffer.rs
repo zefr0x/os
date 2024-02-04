@@ -14,23 +14,25 @@ pub struct Display {
 }
 
 impl Display {
-    pub fn new(framebuffer: &'static mut FrameBuffer) -> Display {
+    pub fn new(framebuffer: &'static mut FrameBuffer) -> Self {
         Self { framebuffer }
     }
 
-    pub fn clear(&mut self) {
+    pub fn fill0(&mut self) {
         self.framebuffer.buffer_mut().fill(0);
     }
 
     /// Caller must ensure that the x and y coordinates are both >= 0
     /// and less than the framebuffer width and height respectively.
-    unsafe fn set_pixel(framebuffer: &mut FrameBuffer, x: i32, y: i32, r: u8, g: u8, b: u8) {
+    #[allow(clippy::many_single_char_names)]
+    fn set_pixel(framebuffer: &mut FrameBuffer, x: i32, y: i32, r: u8, g: u8, b: u8) {
         let info = framebuffer.info();
 
         match info.pixel_format {
             PixelFormat::Rgb => {
-                let index = info.stride * info.bytes_per_pixel * (y as usize)
-                    + info.bytes_per_pixel * (x as usize)
+                #[allow(clippy::unwrap_used)]
+                let index = info.stride * info.bytes_per_pixel * (usize::try_from(y).unwrap())
+                    + info.bytes_per_pixel * (usize::try_from(x).unwrap())
                     + info.bytes_per_pixel
                     - 3;
                 let buffer = framebuffer.buffer_mut();
@@ -40,8 +42,9 @@ impl Display {
                 buffer[index + 2] = b;
             }
             PixelFormat::Bgr => {
-                let index = info.stride * info.bytes_per_pixel * (y as usize)
-                    + info.bytes_per_pixel * (x as usize)
+                #[allow(clippy::unwrap_used)]
+                let index = info.stride * info.bytes_per_pixel * (usize::try_from(y).unwrap())
+                    + info.bytes_per_pixel * (usize::try_from(x).unwrap())
                     + info.bytes_per_pixel
                     - 3;
                 let buffer = framebuffer.buffer_mut();
@@ -51,25 +54,27 @@ impl Display {
                 buffer[index + 2] = r;
             }
             PixelFormat::U8 => {
-                let r16 = r as u16;
-                let g16 = g as u16;
-                let b16 = b as u16;
-                let y = ((3 * r16 + b16 + 4 * g16) / 8) as u8;
+                #[allow(clippy::unwrap_used)]
+                #[allow(clippy::integer_division)]
+                let pixel =
+                    u8::try_from((3 * u16::from(r) + u16::from(b) + 4 * u16::from(g)) / 8).unwrap();
 
-                let index = info.stride * info.bytes_per_pixel * (y as usize)
-                    + info.bytes_per_pixel * (x as usize)
+                #[allow(clippy::unwrap_used)]
+                let index = info.stride * info.bytes_per_pixel * (usize::try_from(y).unwrap())
+                    + info.bytes_per_pixel * (usize::try_from(x).unwrap())
                     + info.bytes_per_pixel
                     - 1;
 
-                framebuffer.buffer_mut()[index] = y;
+                framebuffer.buffer_mut()[index] = pixel;
             }
             PixelFormat::Unknown {
                 red_position,
                 green_position,
                 blue_position,
             } => {
-                let index = info.stride * info.bytes_per_pixel * (y as usize)
-                    + info.bytes_per_pixel * (x as usize);
+                #[allow(clippy::unwrap_used)]
+                let index = info.stride * info.bytes_per_pixel * (usize::try_from(y).unwrap())
+                    + info.bytes_per_pixel * (usize::try_from(x).unwrap());
                 let buffer = framebuffer.buffer_mut();
 
                 buffer[index + red_position as usize] = r;
@@ -83,19 +88,18 @@ impl Display {
     fn draw_pixel(&mut self, Pixel(point, color): Pixel<Rgb888>) {
         let size = self.size();
 
-        if (0..(size.width as i32)).contains(&point.x)
-            && (0..(size.height as i32)).contains(&point.y)
+        #[allow(clippy::unwrap_used)]
+        if (0_i32..(i32::try_from(size.width).unwrap())).contains(&point.x)
+            && (0_i32..(i32::try_from(size.height).unwrap())).contains(&point.y)
         {
-            unsafe {
-                Display::set_pixel(
-                    self.framebuffer,
-                    point.x,
-                    point.y,
-                    color.r(),
-                    color.g(),
-                    color.b(),
-                )
-            };
+            Self::set_pixel(
+                self.framebuffer,
+                point.x,
+                point.y,
+                color.r(),
+                color.g(),
+                color.b(),
+            );
         }
     }
 }
@@ -104,7 +108,12 @@ impl OriginDimensions for Display {
     fn size(&self) -> Size {
         let info = self.framebuffer.info();
 
-        Size::new(info.width as u32, info.height as u32)
+        Size::new(
+            #[allow(clippy::unwrap_used)]
+            u32::try_from(info.width).unwrap(),
+            #[allow(clippy::unwrap_used)]
+            u32::try_from(info.height).unwrap(),
+        )
     }
 }
 
@@ -116,7 +125,7 @@ impl DrawTarget for Display {
     where
         I: IntoIterator<Item = Pixel<Self::Color>>,
     {
-        for pixel in pixels.into_iter() {
+        for pixel in pixels {
             self.draw_pixel(pixel);
         }
 

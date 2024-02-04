@@ -22,7 +22,7 @@ fn start_kernel(boot_info: &'static mut BootInfo) -> ! {
 
     if let Optional::Some(ref mut framebuffer) = boot_info.framebuffer {
         let mut display = kernel::drivers::frame_buffer::Display::new(framebuffer);
-        display.clear();
+        display.fill0();
     }
 
     hlt_loop();
@@ -32,9 +32,9 @@ fn start_kernel(boot_info: &'static mut BootInfo) -> ! {
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    use kernel::serial_print;
+    use kernel::dbg_print;
 
-    serial_print!("{}", info);
+    dbg_print!("{}", info);
 
     hlt_loop();
 }
