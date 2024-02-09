@@ -1,6 +1,10 @@
 use generic_once_cell::Lazy;
 use spin::Mutex;
 use x86_64::{
+    instructions::{
+        segmentation::{self, Segment},
+        tables::load_tss,
+    },
     structures::{
         gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
         tss::TaskStateSegment,
@@ -14,6 +18,7 @@ pub const STACK_SIZE: usize = 4096 * 5;
 struct GdtWithSelectors {
     gdt: GlobalDescriptorTable,
     code_selector: SegmentSelector,
+    data_selector: SegmentSelector,
     tss_selector: SegmentSelector,
 }
 
@@ -36,28 +41,38 @@ static GDT: Lazy<Mutex<()>, GdtWithSelectors> = Lazy::new(|| {
     let mut gdt = GlobalDescriptorTable::new();
 
     let code_selector = gdt.add_entry(Descriptor::kernel_code_segment());
+    let data_selector = gdt.add_entry(Descriptor::kernel_data_segment());
     let tss_selector = gdt.add_entry(Descriptor::tss_segment(&TSS));
 
     GdtWithSelectors {
         gdt,
         code_selector,
+        data_selector,
         tss_selector,
     }
 });
 
 pub fn init() {
-    use x86_64::instructions::{
-        segmentation::{Segment, CS},
-        tables::load_tss,
-    };
-
     GDT.gdt.load();
 
-    // SAFETY: Reload the `cs` register.
+    // SAFETY: Reload the code segment register.
     #[allow(unsafe_code)]
     unsafe {
-        CS::set_reg(GDT.code_selector);
+        segmentation::CS::set_reg(GDT.code_selector);
     }
+
+    // SAFETY: Reload the data segment register.
+    #[allow(unsafe_code)]
+    unsafe {
+        segmentation::DS::set_reg(GDT.data_selector);
+    }
+
+    // SAFETY: Reload the `es` register.
+    #[allow(unsafe_code)]
+    unsafe {
+        segmentation::ES::set_reg(SegmentSelector(0));
+    }
+
     // SAFETY: Load TSS.
     #[allow(unsafe_code)]
     unsafe {

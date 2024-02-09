@@ -7,7 +7,15 @@ pub mod interrupts;
 
 pub fn init() {
     gdt::init();
-    interrupts::init_idt();
+
+    interrupts::IDT.load();
+
+    #[allow(unsafe_code)]
+    // SAFETY: PIC is correctly configured.
+    unsafe {
+        interrupts::PICS.lock().initialize();
+    }
+    x86_64::instructions::interrupts::enable();
 }
 
 pub fn hlt_loop() -> ! {

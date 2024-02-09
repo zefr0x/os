@@ -14,11 +14,14 @@ pub static SERIAL0: Lazy<Mutex<()>, Mutex<SerialPort>> = Lazy::new(|| {
 #[doc(hidden)]
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
-    SERIAL0
-        .lock()
-        .write_fmt(args)
-        // Panics are printed to serial, so ...
-        .expect("Printing to serial failed"); // <- Useless ;)
+
+    x86_64::instructions::interrupts::without_interrupts(|| {
+        SERIAL0
+            .lock()
+            .write_fmt(args)
+            // Panics are printed to serial, so ...
+            .expect("Printing to serial failed"); // <- Useless ;)
+    });
 }
 
 /// Prints to the host through the serial interface.

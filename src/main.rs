@@ -3,12 +3,11 @@ fn main() {
     let uefi_path = env!("UEFI_PATH");
     let bios_path = env!("BIOS_PATH");
 
-    println!("Running: {uefi_path}");
-
     // choose wheter to use kvm or not for the VM
     let kvm = true;
     // choose whether to start the UEFI or BIOS image
-    let uefi = true;
+    // FIX: UEFI dosn't support 8259 PIC, the new APIC should be used.
+    let uefi = false;
 
     let mut cmd = std::process::Command::new("qemu-system-x86_64");
 
@@ -18,10 +17,12 @@ fn main() {
     }
 
     if uefi {
+        println!("Running: {uefi_path}");
         cmd.arg("-bios").arg(ovmf_prebuilt::ovmf_pure_efi());
         cmd.arg("-drive")
             .arg(format!("format=raw,file={uefi_path}"));
     } else {
+        println!("Running: {bios_path}");
         cmd.arg("-drive")
             .arg(format!("format=raw,file={bios_path}"));
     }
