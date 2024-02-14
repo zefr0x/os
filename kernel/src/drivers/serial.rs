@@ -1,9 +1,8 @@
-use generic_once_cell::Lazy;
-use spin::Mutex;
+use spin::{Lazy, Mutex};
 use uart_16550::SerialPort;
 
 // Used to print debug info.
-pub static SERIAL0: Lazy<Mutex<()>, Mutex<SerialPort>> = Lazy::new(|| {
+pub static SERIAL0: Lazy<Mutex<SerialPort>> = Lazy::new(|| {
     #[allow(unsafe_code)]
     let mut serial_port = unsafe { SerialPort::new(0x3F8) };
     serial_port.init();

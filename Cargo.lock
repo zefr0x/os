@@ -510,15 +510,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "generic_once_cell"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c27ddeab45f9c2238a860db235b3e80ce23651fa8293b6f7f53fb72cbb5ce539"
-dependencies = [
- "lock_api",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -579,7 +570,6 @@ version = "0.1.0"
 dependencies = [
  "bootloader_api",
  "embedded-graphics",
- "generic_once_cell",
  "pc-keyboard",
  "pic8259",
  "spin",

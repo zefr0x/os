@@ -1,5 +1,4 @@
-use generic_once_cell::Lazy;
-use spin::Mutex;
+use spin::Lazy;
 use x86_64::{
     instructions::{
         segmentation::{self, Segment},
@@ -22,7 +21,7 @@ struct GdtWithSelectors {
     tss_selector: SegmentSelector,
 }
 
-static TSS: Lazy<Mutex<()>, TaskStateSegment> = Lazy::new(|| {
+static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
     let mut tss = TaskStateSegment::new();
 
     tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = {
@@ -37,7 +36,7 @@ static TSS: Lazy<Mutex<()>, TaskStateSegment> = Lazy::new(|| {
     tss
 });
 
-static GDT: Lazy<Mutex<()>, GdtWithSelectors> = Lazy::new(|| {
+static GDT: Lazy<GdtWithSelectors> = Lazy::new(|| {
     let mut gdt = GlobalDescriptorTable::new();
 
     let code_selector = gdt.add_entry(Descriptor::kernel_code_segment());

@@ -1,5 +1,4 @@
-use generic_once_cell::Lazy;
-use spin::Mutex;
+use spin::{Lazy, Mutex};
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 use crate::dbg_println;
@@ -8,7 +7,7 @@ use crate::gdt;
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 
-pub static IDT: Lazy<Mutex<()>, InterruptDescriptorTable> = Lazy::new(|| {
+pub static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
 
     // CPU Exceptions
@@ -74,7 +73,6 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
 
 // A static keyboard scancode decoder.
 static KEYBOARD: Lazy<
-    Mutex<()>,
     Mutex<pc_keyboard::Keyboard<pc_keyboard::layouts::Us104Key, pc_keyboard::ScancodeSet1>>,
 > = Lazy::new(|| {
     Mutex::new(pc_keyboard::Keyboard::new(

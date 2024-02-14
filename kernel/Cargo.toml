@@ -9,7 +9,6 @@ workspace = true
 [dependencies]
 bootloader_api = "0.11.6"
 embedded-graphics = "0.8.1"
-generic_once_cell = "0.1.1"
 spin = "0.9.8"
 pc-keyboard = "0.7.0"
 
