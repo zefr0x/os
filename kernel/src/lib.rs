@@ -4,6 +4,7 @@
 pub mod drivers;
 pub mod gdt;
 pub mod interrupts;
+pub mod memory;
 
 pub fn init() {
     gdt::init();

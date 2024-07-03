@@ -1,3 +1,4 @@
+use crate::memory;
 use spin::Lazy;
 use x86_64::{
     instructions::{
@@ -12,7 +13,7 @@ use x86_64::{
 };
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
-pub const STACK_SIZE: usize = 4096 * 5;
+pub const STACK_SIZE: usize = memory::PAGE_SIZE * 5;
 
 struct GdtWithSelectors {
     gdt: GlobalDescriptorTable,
