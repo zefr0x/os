@@ -1,6 +1,10 @@
 #![no_std]
 #![feature(abi_x86_interrupt)]
+#![feature(const_mut_refs)]
 
+extern crate alloc;
+
+pub mod allocator;
 pub mod drivers;
 pub mod gdt;
 pub mod interrupts;
