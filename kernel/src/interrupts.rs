@@ -20,8 +20,8 @@ pub static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     idt.breakpoint.set_handler_fn(breakpoint_handler);
 
     // Hardware Interrupts
-    idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
-    idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
+    idt[InterruptIndex::Timer.as_u8()].set_handler_fn(timer_interrupt_handler);
+    idt[InterruptIndex::Keyboard.as_u8()].set_handler_fn(keyboard_interrupt_handler);
 
     idt
 });
@@ -70,10 +70,6 @@ pub enum InterruptIndex {
 impl InterruptIndex {
     const fn as_u8(self) -> u8 {
         self as u8
-    }
-
-    fn as_usize(self) -> usize {
-        usize::from(self.as_u8())
     }
 }
 

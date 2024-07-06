@@ -13,7 +13,7 @@ use x86_64::{
 };
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
-pub const STACK_SIZE: usize = memory::PAGE_SIZE * 5;
+const STACK_SIZE: usize = memory::PAGE_SIZE * 5;
 
 struct GdtWithSelectors {
     gdt: GlobalDescriptorTable,
@@ -31,7 +31,7 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
         #[expect(unsafe_code)]
         let stack_start = VirtAddr::from_ptr(unsafe { core::ptr::addr_of!(STACK) });
 
-        stack_start + STACK_SIZE
+        stack_start + STACK_SIZE as u64
     };
 
     tss
@@ -40,9 +40,9 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
 static GDT: Lazy<GdtWithSelectors> = Lazy::new(|| {
     let mut gdt = GlobalDescriptorTable::new();
 
-    let code_selector = gdt.add_entry(Descriptor::kernel_code_segment());
-    let data_selector = gdt.add_entry(Descriptor::kernel_data_segment());
-    let tss_selector = gdt.add_entry(Descriptor::tss_segment(&TSS));
+    let code_selector = gdt.append(Descriptor::kernel_code_segment());
+    let data_selector = gdt.append(Descriptor::kernel_data_segment());
+    let tss_selector = gdt.append(Descriptor::tss_segment(&TSS));
 
     GdtWithSelectors {
         gdt,

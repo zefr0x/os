@@ -13,6 +13,6 @@ spin = "0.9.8"
 pc-keyboard = "0.7.0"
 
 [target.'cfg(target_arch="x86_64")'.dependencies]
-x86_64 = "0.14.12"
+x86_64 = "0.15.1"
 uart_16550 = "0.3.0"
-pic8259 = "0.10.4"
+pic8259 = "0.11.0"
