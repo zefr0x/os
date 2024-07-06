@@ -28,7 +28,7 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
     tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = {
         static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
-        #[allow(unsafe_code)]
+        #[expect(unsafe_code)]
         let stack_start = VirtAddr::from_ptr(unsafe { core::ptr::addr_of!(STACK) });
 
         stack_start + STACK_SIZE
@@ -56,25 +56,25 @@ pub fn init() {
     GDT.gdt.load();
 
     // SAFETY: Reload the code segment register.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe {
         segmentation::CS::set_reg(GDT.code_selector);
     }
 
     // SAFETY: Reload the data segment register.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe {
         segmentation::DS::set_reg(GDT.data_selector);
     }
 
     // SAFETY: Reload the `es` register.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe {
         segmentation::ES::set_reg(SegmentSelector(0));
     }
 
     // SAFETY: Load TSS.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe {
         load_tss(GDT.tss_selector);
     }

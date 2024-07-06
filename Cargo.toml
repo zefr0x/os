@@ -47,11 +47,11 @@ unused_qualifications = "warn"
 variant_size_differences = "warn"
 
 [workspace.lints.clippy]
-pedantic = "warn"
-nursery = "warn"
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
 alloc_instead_of_core = "warn"
 allow_attributes = "deny"
-allow_attributes_without_reason = "warn"
+# allow_attributes_without_reason = "warn"
 assertions_on_result_states = "warn"
 clone_on_ref_ptr = "deny"
 create_dir = "warn"

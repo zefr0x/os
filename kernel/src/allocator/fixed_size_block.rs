@@ -14,7 +14,7 @@ pub struct Allocator {
     fallback_allocator: linked_list::Allocator,
 }
 
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 // SAFETY: Allocated and deallocated memory is valid.
 unsafe impl GlobalAlloc for Locked<Allocator> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
@@ -32,7 +32,7 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
                     // only works if all block sizes are a power of 2
                     let block_align = block_size;
 
-                    #[allow(clippy::unwrap_used)]
+                    #[expect(clippy::unwrap_used)]
                     let layout = Layout::from_size_align(block_size, block_align).unwrap();
 
                     // NOTE: The block will be added to the block list on deallocation.
@@ -62,14 +62,14 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
             assert!(size_of::<ListNode>() <= BLOCK_SIZES[index]);
             assert!(align_of::<ListNode>() <= BLOCK_SIZES[index]);
 
-            #[allow(clippy::cast_ptr_alignment)]
+            #[expect(clippy::cast_ptr_alignment)]
             // trust me bro, should be ok
             let new_node_ptr = ptr.cast::<ListNode>();
 
             new_node_ptr.write(new_node);
             allocator.list_heads[index] = Some(&mut *new_node_ptr);
         } else {
-            #[allow(clippy::unwrap_used)]
+            #[expect(clippy::unwrap_used)]
             let ptr = core::ptr::NonNull::new(ptr).unwrap();
 
             allocator.fallback_allocator.deallocate(ptr, layout);
@@ -79,7 +79,7 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
 
 impl Allocator {
     /// Creates an empty ``Allocator``.
-    #[allow(clippy::new_without_default)]
+    #[expect(clippy::new_without_default)]
     pub const fn new() -> Self {
         const EMPTY: Option<&'static mut ListNode> = None;
         Self {
@@ -88,7 +88,7 @@ impl Allocator {
         }
     }
 
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     /// Initialize the allocator with the given heap bounds.
     ///
     /// # Safety

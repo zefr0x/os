@@ -15,14 +15,14 @@ pub const PAGE_SIZE: usize = 4096;
 /// must be only called once to avoid aliasing `&mut` references
 /// (which is undefined behavior).
 #[must_use]
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
     let level_4_table = active_level_4_table(physical_memory_offset);
 
     OffsetPageTable::new(level_4_table, physical_memory_offset)
 }
 
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 unsafe fn active_level_4_table(physical_memory_offset: VirtAddr) -> &'static mut PageTable {
     use x86_64::registers::control::Cr3;
 
@@ -50,7 +50,7 @@ impl BootInfoFrameAllocator {
     /// memory map is valid. The main requirement is that all frames that are marked
     /// as `USABLE` in it are really unused.
     #[must_use]
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     pub const unsafe fn init(memory_regions: &'static MemoryRegions) -> Self {
         Self {
             memory_regions,
@@ -85,7 +85,7 @@ impl BootInfoFrameAllocator {
     }
 }
 
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 // SAFETY: It does guarantee that the `allocate_frame` method returns only unique unused frames.
 unsafe impl FrameAllocator<Size4KiB> for BootInfoFrameAllocator {
     fn allocate_frame(&mut self) -> Option<PhysFrame> {

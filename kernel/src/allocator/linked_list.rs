@@ -26,7 +26,6 @@ pub struct Allocator {
 
 impl Allocator {
     /// Creates an empty ``Allocator``.
-    #[allow(clippy::new_without_default)]
     pub const fn new() -> Self {
         Self {
             head: ListNode::new(0),
@@ -40,7 +39,7 @@ impl Allocator {
     /// This function is unsafe because the caller must guarantee that the given
     /// heap bounds are valid and that the heap is unused. This method must be
     /// called only once.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
         self.add_free_region(heap_start, heap_size);
     }
@@ -57,7 +56,7 @@ impl Allocator {
             let excess_size = region.end_addr() - alloc_end;
             if excess_size > 0 {
                 // add the excess size of the memory region back to the free list.
-                #[allow(unsafe_code)]
+                #[expect(unsafe_code)]
                 // SAFETY: Values are valid.
                 unsafe {
                     self.add_free_region(alloc_end, excess_size);
@@ -74,7 +73,7 @@ impl Allocator {
         // perform layout adjustments
         let (size, _) = Self::size_align(layout);
 
-        #[allow(unsafe_code)]
+        #[expect(unsafe_code)]
         // SAFETY: Values are valid.
         unsafe {
             self.add_free_region(ptr.as_ptr() as usize, size);
@@ -82,7 +81,7 @@ impl Allocator {
     }
 
     /// Adds the given memory region to the front of the list.
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe fn add_free_region(&mut self, addr: usize, size: usize) {
         // ensure that the freed region is capable of holding ListNode
         assert_eq!(align_up(addr, align_of::<ListNode>()), addr);
@@ -114,7 +113,7 @@ impl Allocator {
                 // region suitable for allocation -> remove node from list
                 let next = region.next.take();
 
-                #[allow(clippy::unwrap_used)]
+                #[expect(clippy::unwrap_used)]
                 let ret = Some((current.next.take().unwrap(), alloc_start));
 
                 current.next = next;
@@ -123,7 +122,7 @@ impl Allocator {
             }
 
             // region not suitable -> continue with next region
-            #[allow(clippy::unwrap_used)]
+            #[expect(clippy::unwrap_used)]
             let next = current.next.as_mut().unwrap();
 
             current = next;

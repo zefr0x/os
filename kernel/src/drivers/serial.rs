@@ -3,7 +3,7 @@ use uart_16550::SerialPort;
 
 // Used to print debug info.
 pub static SERIAL0: Lazy<Mutex<SerialPort>> = Lazy::new(|| {
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     let mut serial_port = unsafe { SerialPort::new(0x3F8) };
     serial_port.init();
 

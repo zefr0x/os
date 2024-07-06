@@ -10,7 +10,7 @@ pub static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
 
     // CPU Exceptions
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     unsafe {
         idt.double_fault
             .set_handler_fn(double_fault_handler)
@@ -26,7 +26,7 @@ pub static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     idt
 });
 
-#[allow(unsafe_code)]
+#[expect(unsafe_code)]
 pub static PICS: Mutex<pic8259::ChainedPics> =
     Mutex::new(unsafe { pic8259::ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
 
@@ -78,7 +78,7 @@ impl InterruptIndex {
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     // SAFETY: Interrupt index is correct.
     unsafe {
         PICS.lock()
@@ -101,7 +101,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     // To read a byte from the keyboard’s data port.
     let mut port = x86_64::instructions::port::Port::new(0x60);
 
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     // SAFETY: I/O port could have side effects that violate memory safety.
     let scancode: u8 = unsafe { port.read() };
 
@@ -120,7 +120,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
         }
     }
 
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     // SAFETY: Interrupt index is correct.
     unsafe {
         PICS.lock()

@@ -15,7 +15,7 @@ pub fn init() {
 
     interrupts::IDT.load();
 
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     // SAFETY: PIC is correctly configured.
     unsafe {
         interrupts::PICS.lock().initialize();

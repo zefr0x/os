@@ -64,14 +64,14 @@ pub fn init_heap(
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
-        #[allow(unsafe_code)]
+        #[expect(unsafe_code)]
         // SAFETY: Mapping valid and unused memory.
         unsafe {
             mapper.map_to(page, frame, flags, frame_allocator)?.flush();
         };
     }
 
-    #[allow(unsafe_code)]
+    #[expect(unsafe_code)]
     // SAFETY: Memory range is unused and this method only called once.
     unsafe {
         ALLOCATOR.lock().init(HEAP_START, HEAP_SIZE);
