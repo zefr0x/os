@@ -1,3 +1,5 @@
+pub mod keyboard;
+
 use spin::{Lazy, Mutex};
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
@@ -82,17 +84,6 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
     }
 }
 
-// A static keyboard scancode decoder.
-static KEYBOARD: Lazy<
-    Mutex<pc_keyboard::Keyboard<pc_keyboard::layouts::Us104Key, pc_keyboard::ScancodeSet1>>,
-> = Lazy::new(|| {
-    Mutex::new(pc_keyboard::Keyboard::new(
-        pc_keyboard::ScancodeSet1::new(),
-        pc_keyboard::layouts::Us104Key,
-        pc_keyboard::HandleControl::Ignore,
-    ))
-});
-
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
     // To read a byte from the keyboard’s data port.
     let mut port = x86_64::instructions::port::Port::new(0x60);
@@ -101,20 +92,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     // SAFETY: I/O port could have side effects that violate memory safety.
     let scancode: u8 = unsafe { port.read() };
 
-    let mut keyboard = KEYBOARD.lock();
-
-    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(key) = keyboard.process_keyevent(key_event) {
-            match key {
-                pc_keyboard::DecodedKey::Unicode(character) => {
-                    dbg_println!("KEYBOARD_CHAR: {}", character);
-                }
-                pc_keyboard::DecodedKey::RawKey(key) => {
-                    dbg_println!("KEYBOARD_KEY: {:?}", key);
-                }
-            }
-        }
-    }
+    keyboard::add_scancode(scancode);
 
     #[expect(unsafe_code)]
     // SAFETY: Interrupt index is correct.
