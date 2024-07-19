@@ -9,6 +9,7 @@ pub mod drivers;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
+pub mod async_tasking;
 
 pub fn init() {
     gdt::init();

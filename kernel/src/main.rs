@@ -10,8 +10,6 @@ use bootloader_api::{
     BootInfo,
 };
 
-use kernel::hlt_loop;
-
 pub static BOOTLOADER_CONFIG: BootloaderConfig = {
     let mut config = BootloaderConfig::new_default();
     config.mappings.physical_memory = Some(Mapping::Dynamic);
@@ -46,19 +44,23 @@ fn start_kernel(boot_info: &'static mut BootInfo) -> ! {
             .expect("Kernel heap initialization failed.");
     }
 
-    if let Optional::Some(ref mut framebuffer) = boot_info.framebuffer {
-        let mut display = kernel::drivers::frame_buffer::Display::new(framebuffer);
-        display.fill0();
-    }
+    let mut executor = kernel::async_tasking::Executor::new();
 
-    hlt_loop();
+    executor.spawn(kernel::async_tasking::Task::new(async {
+        if let Optional::Some(ref mut framebuffer) = boot_info.framebuffer {
+            let mut display = kernel::drivers::frame_buffer::Display::new(framebuffer);
+            display.fill0();
+        }
+    }));
+
+    executor.run();
 }
 
 // FIX: Tests are not supported.
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    use kernel::dbg_print;
+    use kernel::{dbg_print, hlt_loop};
 
     dbg_print!("{}", info);
 

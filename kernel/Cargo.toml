@@ -8,9 +8,10 @@ workspace = true
 
 [dependencies]
 bootloader_api = "0.11.7"
+crossbeam-queue = { version = "0.3.11", default-features = false, features = ["alloc"] }
 embedded-graphics = "0.8.1"
-spin = "0.9.8"
 pc-keyboard = "0.7.0"
+spin = "0.9.8"
 
 [target.'cfg(target_arch="x86_64")'.dependencies]
 x86_64 = "0.15.1"
