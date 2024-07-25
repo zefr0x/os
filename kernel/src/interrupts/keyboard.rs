@@ -3,9 +3,9 @@ use core::{
     task::{Context, Poll},
 };
 
-use conquer_once::spin::OnceCell;
 use crossbeam_queue::ArrayQueue;
 use futures_util::{stream::Stream, task::AtomicWaker};
+use spin::once::Once;
 
 use crate::dbg_println;
 
@@ -13,7 +13,7 @@ const QUEUE_SIZE: usize = 100;
 
 static SCANCODE_STREAM_WAKER: AtomicWaker = AtomicWaker::new();
 
-static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
+static SCANCODE_QUEUE: Once<ArrayQueue<u8>> = Once::new();
 
 pub struct ScancodeStream {
     _private: (), // To prevent construction of the struct from outside of the module
@@ -26,9 +26,11 @@ impl ScancodeStream {
     #[expect(clippy::new_without_default)]
     #[must_use]
     pub fn new() -> Self {
-        SCANCODE_QUEUE
-            .try_init_once(|| ArrayQueue::new(QUEUE_SIZE))
-            .expect("ScancodeStream::new should only be called once");
+        if SCANCODE_QUEUE.is_completed() {
+            panic!("ScancodeStream::new should only be called once");
+        } else {
+            SCANCODE_QUEUE.call_once(|| ArrayQueue::new(QUEUE_SIZE));
+        }
 
         Self { _private: () }
     }
@@ -38,7 +40,7 @@ impl Stream for ScancodeStream {
     type Item = u8;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<u8>> {
-        let queue = SCANCODE_QUEUE.try_get().expect("not initialized");
+        let queue = SCANCODE_QUEUE.get().expect("not initialized");
 
         if let Some(scancode) = queue.pop() {
             return Poll::Ready(Some(scancode));
@@ -56,8 +58,8 @@ impl Stream for ScancodeStream {
 /// Called by the keyboard interrupt handler.
 ///
 /// Must not block or allocate.
-pub(in super) fn add_scancode(scancode: u8) {
-    if let Ok(queue) = SCANCODE_QUEUE.try_get() {
+pub(super) fn add_scancode(scancode: u8) {
+    if let Some(queue) = SCANCODE_QUEUE.get() {
         match queue.push(scancode) {
             Ok(()) => SCANCODE_STREAM_WAKER.wake(),
             Err(_) => dbg_println!("WARNING: scancode queue full; dropping keyboard input"),

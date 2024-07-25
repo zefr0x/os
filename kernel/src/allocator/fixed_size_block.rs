@@ -79,7 +79,6 @@ unsafe impl GlobalAlloc for Locked<Allocator> {
 
 impl Allocator {
     /// Creates an empty ``Allocator``.
-    #[expect(clippy::new_without_default)]
     pub const fn new() -> Self {
         const EMPTY: Option<&'static mut ListNode> = None;
         Self {

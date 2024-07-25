@@ -2,11 +2,11 @@ mod fixed_size_block;
 mod linked_list;
 
 use x86_64::{
-    structures::paging::{
-        mapper::MapToError, FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB,
-    },
+    structures::paging::{mapper::MapToError, FrameAllocator, Page, PageTableFlags, Size4KiB},
     VirtAddr,
 };
+
+use crate::memory;
 
 pub const HEAP_START: usize = 0x4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB (should be increased when we need more space)
@@ -43,10 +43,7 @@ const fn align_up(addr: usize, align: usize) -> usize {
 /// # Errors
 ///
 /// When frame allocation or its mapping fails.
-pub fn init_heap(
-    mapper: &mut impl Mapper<Size4KiB>,
-    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
-) -> Result<(), MapToError<Size4KiB>> {
+pub fn init_heap() -> Result<(), MapToError<Size4KiB>> {
     let page_range = {
         let heap_start = VirtAddr::new(HEAP_START as u64);
         let heap_end = heap_start + HEAP_SIZE as u64 - 1_u64;
@@ -57,17 +54,20 @@ pub fn init_heap(
         Page::range_inclusive(heap_start_page, heap_end_page)
     };
 
+    let frame_allocator = memory::get_memory_frame_allocator();
+
     for page in page_range {
         let frame = frame_allocator
+            .lock()
             .allocate_frame()
             .ok_or(MapToError::FrameAllocationFailed)?;
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
         #[expect(unsafe_code)]
-        // SAFETY: Mapping valid and unused memory.
+        // SAFETY: Mapping valid and for unused memory.
         unsafe {
-            mapper.map_to(page, frame, flags, frame_allocator)?.flush();
+            memory::map_page(page, frame, flags)?;
         };
     }
 

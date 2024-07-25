@@ -8,6 +8,9 @@ use embedded_graphics::{
     pixelcolor::{Rgb888, RgbColor},
     Pixel,
 };
+use spin::{once::Once, Mutex};
+
+pub static DISPLAY: Once<Mutex<Display>> = Once::new();
 
 pub struct Display {
     framebuffer: &'static mut FrameBuffer,
