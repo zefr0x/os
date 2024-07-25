@@ -1,6 +1,6 @@
 use acpi::{AcpiHandler, AcpiTables, InterruptModel};
 
-use crate::memory;
+use crate::{interrupts, memory};
 
 #[derive(Clone)]
 pub struct Handler;
@@ -94,4 +94,14 @@ pub fn init(rsdp_addr: u64) {
         .platform_info()
         .expect("Failed to contruct `PlatformInfo` from `AcpiTables`");
     let interrupt_model = platform_info.interrupt_model;
+
+    // Initialize APIC
+    match interrupt_model {
+        InterruptModel::Apic(apic) => {
+            interrupts::apic::init(&apic);
+        }
+        _ => {
+            panic!("Unknown interrupt model")
+        }
+    }
 }

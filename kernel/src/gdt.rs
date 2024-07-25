@@ -31,7 +31,7 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
         #[expect(unsafe_code)]
         let stack_start = VirtAddr::from_ptr(unsafe { core::ptr::addr_of!(STACK) });
 
-        stack_start + STACK_SIZE as u64
+        stack_start + STACK_SIZE as u64 // stack_end
     };
 
     tss
