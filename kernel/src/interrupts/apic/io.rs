@@ -27,7 +27,7 @@ pub fn init(apic: &Apic<Global>) {
             ioapic.init(InterruptIndex::offset());
         }
 
-        // TODO: Should we realy assign the keyboard IRQ to every I/O APIC?
+        // TODO: Should we really assign the keyboard IRQ to every I/O APIC?
         assign_irq_entry(InterruptIndex::Keyboard, ioapic);
     }
 }

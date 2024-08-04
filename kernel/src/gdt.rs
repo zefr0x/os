@@ -12,8 +12,29 @@ use x86_64::{
     VirtAddr,
 };
 
-pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 const STACK_SIZE: usize = memory::PAGE_SIZE * 5;
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u16)]
+pub enum IstIndex {
+    DoubleFault = 0,
+    PageFault = 1,
+    InvalidTSS = 2,
+    DivideError = 3,
+    SegmentNotPresent = 4,
+    StackSegmentFault = 5,
+    GeneralProtectionFault = 6,
+}
+
+impl IstIndex {
+    pub const fn as_u16(self) -> u16 {
+        self as u16
+    }
+
+    const fn as_usize(self) -> usize {
+        self as usize
+    }
+}
 
 struct GdtWithSelectors {
     gdt: GlobalDescriptorTable,
@@ -25,14 +46,30 @@ struct GdtWithSelectors {
 static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
     let mut tss = TaskStateSegment::new();
 
-    tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = {
-        static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
+    macro_rules! ist_entry {
+        ($index:expr) => {
+            tss.interrupt_stack_table[$index] = {
+                static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
-        #[expect(unsafe_code)]
-        let stack_start = VirtAddr::from_ptr(unsafe { core::ptr::addr_of!(STACK) });
+                VirtAddr::from_ptr(
+                    #[expect(unsafe_code)]
+                    // SAFETY: The macro is used correctly.
+                    unsafe {
+                        core::ptr::addr_of!(STACK)
+                    },
+                ) + STACK_SIZE as u64 // stack end address
+            };
+        };
+    }
 
-        stack_start + STACK_SIZE as u64 // stack_end
-    };
+    // Create a stack for those and add them to the table.
+    ist_entry!(IstIndex::DoubleFault.as_usize());
+    ist_entry!(IstIndex::PageFault.as_usize());
+    ist_entry!(IstIndex::InvalidTSS.as_usize());
+    ist_entry!(IstIndex::DivideError.as_usize());
+    ist_entry!(IstIndex::SegmentNotPresent.as_usize());
+    ist_entry!(IstIndex::StackSegmentFault.as_usize());
+    ist_entry!(IstIndex::GeneralProtectionFault.as_usize());
 
     tss
 });

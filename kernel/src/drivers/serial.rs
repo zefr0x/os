@@ -23,6 +23,8 @@ pub fn _print(args: ::core::fmt::Arguments) {
     });
 }
 
+// TODO: Implement a proper loging system.
+
 /// Prints to the host through the serial interface.
 #[macro_export]
 macro_rules! dbg_print {

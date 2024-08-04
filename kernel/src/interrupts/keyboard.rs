@@ -40,7 +40,9 @@ impl Stream for ScancodeStream {
     type Item = u8;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<u8>> {
-        let queue = SCANCODE_QUEUE.get().expect("not initialized");
+        let queue = SCANCODE_QUEUE
+            .get()
+            .expect("Scancode queue not initialized");
 
         if let Some(scancode) = queue.pop() {
             return Poll::Ready(Some(scancode));
