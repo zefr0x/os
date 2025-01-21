@@ -11,7 +11,7 @@ pub static SERIAL0: Lazy<Mutex<SerialPort>> = Lazy::new(|| {
 });
 
 #[doc(hidden)]
-pub fn _print(args: ::core::fmt::Arguments) {
+pub fn print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
 
     x86_64::instructions::interrupts::without_interrupts(|| {
@@ -29,7 +29,7 @@ pub fn _print(args: ::core::fmt::Arguments) {
 #[macro_export]
 macro_rules! dbg_print {
     ($($arg:tt)*) => {
-        $crate::drivers::serial::_print(format_args!($($arg)*))
+        $crate::drivers::serial::print(format_args!($($arg)*))
     };
 }
 

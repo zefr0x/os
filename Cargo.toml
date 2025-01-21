@@ -9,11 +9,11 @@ license = "GPL-3.0"
 workspace = true
 
 [build-dependencies]
-bootloader = "0.11.7"
+bootloader = "0.11.9"
 kernel = { path = "kernel", artifact = "bin", target = "x86_64-unknown-none" }
 
 [dependencies]
-ovmf-prebuilt = "0.1.0-alpha.1"
+ovmf-prebuilt = "0.2.1"
 
 [profile.dev]
 panic = "abort"

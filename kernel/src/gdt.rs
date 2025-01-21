@@ -51,13 +51,7 @@ static TSS: Lazy<TaskStateSegment> = Lazy::new(|| {
             tss.interrupt_stack_table[$index] = {
                 static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
-                VirtAddr::from_ptr(
-                    #[expect(unsafe_code)]
-                    // SAFETY: The macro is used correctly.
-                    unsafe {
-                        core::ptr::addr_of!(STACK)
-                    },
-                ) + STACK_SIZE as u64 // stack end address
+                VirtAddr::from_ptr(&raw const STACK) + STACK_SIZE as u64 // stack end address
             };
         };
     }

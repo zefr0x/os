@@ -1,3 +1,5 @@
+use ovmf_prebuilt::{Arch, FileType, Prebuilt, Source};
+
 fn main() {
     // read env variables that were set in build script
     let uefi_path = env!("UEFI_PATH");
@@ -17,9 +19,18 @@ fn main() {
 
     if uefi {
         println!("Running: {uefi_path}");
-        // TODO: Delete when https://github.com/rust-osdev/bootloader/pull/448 released.
-        cmd.arg("-m").arg("4G");
-        cmd.arg("-bios").arg(ovmf_prebuilt::ovmf_pure_efi());
+
+        let prebuilt =
+            Prebuilt::fetch(Source::LATEST, "target/ovmf").expect("failed to update prebuilt");
+
+        cmd.arg("-drive").arg(format!(
+            "if=pflash,format=raw,readonly=on,file={}",
+            prebuilt.get_file(Arch::X64, FileType::Code).display()
+        ));
+        cmd.arg("-drive").arg(format!(
+            "if=pflash,format=raw,readonly=on,file={}",
+            prebuilt.get_file(Arch::X64, FileType::Vars).display()
+        ));
         cmd.arg("-drive")
             .arg(format!("format=raw,file={uefi_path}"));
     } else {
