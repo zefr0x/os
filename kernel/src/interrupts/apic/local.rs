@@ -10,6 +10,11 @@ pub struct Local {
     lapic: Option<LocalApic>,
 }
 
+#[expect(clippy::non_send_fields_in_send_ty)]
+#[expect(unsafe_code)]
+// SAFETY: Trust me bro, it will be used just in a single thread.
+unsafe impl Send for Local {}
+
 impl Local {
     pub fn init(&mut self, local_apic_address: u64) {
         disable_8259();
